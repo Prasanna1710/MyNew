@@ -1,0 +1,107 @@
+#include<config.h>
+#include<stdlib.h>
+#include<serial.h>
+
+#define tsl 50
+
+OS_STK Task0Stk[tsl];
+OS_STK Task1Stk[tsl];
+OS_STK Task2Stk[tsl];
+
+void Task0(void *pdata);
+void Task1(void *pdata);
+void Task2(void *pdata);
+
+OS_Event *mutex
+
+
+int main(void)
+{
+	uint8 err;
+	IO0DIR = 0x00FF0000;
+	init_serial();
+	TargetInit();
+	OSInit();
+	
+	mutex = OSMutexCreate(1, &err);
+	OSTaskCreate(Task0, (void *)0, Task0Stk[tsl-1], 3);
+	OSTaskCreate(Task1, (void *)0, Task1Stk[tsl-1], 4);
+	OSTaskCreate(Task2, (void *)0, Task2Stk[tsl-1], 5);
+	
+	OSStart();
+}
+
+void Task0(void *pdata)
+{
+	uint8 err;
+	int n;
+	
+	while(1)
+	{
+		printf("task0 waiting for mutex);
+		OSMutexPend(mutex, 0, &err);
+		printf("task0 aquired mutex");
+		IO0CLR = 0xFF < 16;
+		for (n=0; n<10; n++)
+		{
+			IO0SET = n << 16;
+			OSTimeDly(20);
+			IO0CLR = n << 16;
+			OSTimeDly(20);
+		}
+		
+		OSMutexPost(mutex):
+		printf("Mutex Released);
+	}
+}
+
+void Task1(void *pdata)
+{
+	uint8 err;
+	int n;
+	
+	while(1)
+	{
+		printf("task1 waiting for mutex);
+		OSMutexPend(mutex, 0, &err);
+		printf("task1 aquired mutex");
+		IO0CLR = 0xFF < 16;
+		for (n=0; n<10; n++)
+		{
+			IO0SET = 0xff << 16;
+			OSTimeDly(20);
+			IO0CLR = 0xff << 16;
+			OSTimeDly(20);
+		}
+		
+		OSMutexPost(mutex):
+		printf("Mutex Released);
+	}
+}
+
+void Task0(void *pdata)
+{
+	uint8 err;
+	int n;
+	int a;
+	
+	while(1)
+	{
+		printf("task0 waiting for mutex);
+		OSMutexPend(mutex, 0, &err);
+		printf("task0 aquired mutex");
+		IO0CLR = 0xFF < 16;
+		for (n=0; n<8; n++)
+		{
+			IO0SET = a << 16;
+			OSTimeDly(20);
+			IO0CLR = a << 16;
+			OSTimeDly(20);
+			a = a << 1;
+			
+		}
+		
+		OSMutexPost(mutex):
+		printf("Mutex Released);
+	}
+}

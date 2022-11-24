@@ -1,0 +1,59 @@
+#include<config.h>
+#include<serial.h>
+#include<stdlib.h>
+
+#define tsl 100
+
+OS_STK Task1Stk[tsl];
+OS_STK Task0Stk[tsl];
+
+OS_Event *mQueue;
+void *mQueue_T[20];
+
+
+int main(void0
+{
+	uint8 err;
+	IO0DIR = 0x007f8000;
+	
+	init_serial();
+	TargetInit();
+	OSInit();
+	
+	mQueue = OSQCreate(&mQueue_T[0], 20);
+	
+	OSTaskCreate(Task1, (void *)0, Task1Stk[tsl-1], 0);
+	OSTaskCreate(Task0, (void *)0, Task0Stk[tsl-1], 1);
+	
+	OSStart();
+	return 0;
+}
+
+void Task0 (void *pdata)
+{
+	uint8 err;
+	char *rxmsg;
+	
+	while(1)
+	{
+		printf("Waiting for msg);
+		rxmsg = (char*)OSQPend(mQueue,0,&err);
+		printf("received);
+		printf(rxmsg);
+	}
+}
+
+void Task1 (void *pdata)
+{
+	char txmsg1[] = "msg1 from task1";
+	char txmsg2[] = 'msg2 from task2";
+	
+	while(1)
+	{
+		OSTimeDlyHMSM(0,0,5,0);
+		printf("in task1);
+		OSQPost(mQueue, (void*)&txmsg1);
+		OSQPost(mQueue, (void*)&txmsg2);
+		
+	}
+}

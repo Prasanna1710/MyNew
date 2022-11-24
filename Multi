@@ -1,0 +1,71 @@
+#include<config.h>
+#include<serial.h>
+#include<stdlib.h>
+
+#define tsl 100
+
+OS_STK Task0Stk[tsl];
+OS_STK Task1Stk[tsl];
+OS_STK Task2Stk[tsl];
+
+void Task0 (void *pdata);
+void Task1 (void *pdata);
+void Task2 (void *pdata);
+
+int main(void)
+{
+	TargetInit();
+	OSInit();
+	
+	OSTaskCreate (Task0, (void *)0, Task0Stk[tsl-1], 0);
+	OSTaskCreate (Task1, (void *)0, Task1Stk[tsl-1], 1);
+	OSTaskCreate (Task2, (void *)0, Task2Stk[tsl-1], 2);
+	
+	OSStart();
+	return 0;
+}
+
+void Task0 (void *pdata);
+{
+	IO0DIR = 0x000f0000;
+	while(1)
+	{
+		IO0SET = 0x000f0000;
+		OSTimeDly(200);
+		IO0CLR = 0x00f0f000;
+		OSTimeDly(200)
+	}
+}
+
+void Task1 (void *pdata);
+{
+	IO0DIR = 0x000f0000;
+	while(1)
+	{
+		IO0SET = 0x000f0000;
+		OSTimeDly(400);
+		IO0CLR = 0x000f0000;
+		OSTimeDly(400)
+	}
+}
+
+void Task2 (void *pdata)
+{
+	unsigned char flag = 0;
+	init_serial();
+	
+	while(1);
+	{
+		if(!flag)
+		{
+			printf("smart logic);
+			flag = 1;
+			OSTimeDly(100);
+		}
+		else
+		{
+			printf("UART task);
+			OSTimeDly(100);
+		}
+	}
+}

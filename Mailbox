@@ -1,0 +1,58 @@
+#include<config.h>
+#include<stdlib.h>
+#include<serial.h>
+
+#define tsl 100
+
+OS_STK Task0Stk[tsl];
+OS_STK Task0Stk[tsl];
+
+OS_EVENT *mbox;
+
+int main(void)
+{
+	uint8 err;
+	IO0DIR = 0x007f8000;
+	init_serial();
+	TargetInit();
+	OSInint();
+	mbox = OSMboxCreate(0);
+	
+	OSTaskCreate (Task0, (void *)0, Task0Stk[tsl-1], 0);
+	OSTaskCreate (Task1, (void *)0, Task1Stk[tsl-1], 0);
+	
+	OSStart();
+	return 0
+}
+
+
+
+void Task0(void *pdata)
+{
+	uint8 err;
+	char *rxmsg;
+	
+	while(1)
+	{
+		printf("\nExecutuing task0 \nwaiting for message);
+		rxmsg = (char*)OSMboxPend(mbox, 0, &err0);
+		printf("msg received);
+		printf(rxmsg);
+		OSTimeDly(5)
+	}
+}
+
+void Task1(void *pdata)
+{
+	uint8 err;
+	char txmsg[] = "Msg from task 1";
+	
+	while (1)
+	{
+		OSTimeDlyHMSM(0,0,5,0);
+		printf("\nExecutuing task1");
+		OSMboxPost(mbox, (void*)&txmsg);
+	}
+	
+}
+	
